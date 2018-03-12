@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            border:none;
+        }
+        body{
+        }
+        #box{
+            width: 200px;
+            height: 200px;
+            margin:50px 0 0 50px;
+            position: relative;
+        }
+        #small_box{
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        #small_box img{
+            width:200px;
+            height: 200px;
+        }
+        #small_box #mask{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50px;
+            height:50px;
+            background-color: rgba(255,255,0,0.5);
+            cursor: move;
+            display: none;
+        }
+        #big_box{
+            width: 500px;
+            height: 500px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 205px;
+            overflow: hidden;
+            display: none;
+        }
+        #big_box img{
+            width: 400%;
+            height: 400%;
+        }
+        #list{
+            margin:3px 0 0 50px;
+            width: 200px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #list img{
+            width: 46px;
+            height: 46px;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+        #list img.selected{
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div id="box">
+    <div id="small_box">
+        <img src="img1.jpg">
+        <span id="mask"></span>
+    </div>
+    <div id="big_box">
+        <img src="img1.jpg" style="position: absolute">
+    </div>
+</div>
+<div id="list">
+    <img src="img1.jpg" class="selected">
+    <img src="img2.jpg">
+    <img src="img3.jpg">
+    <img src="img4.jpg">
+</div>
+
+<script>
+    window.onload=function () {
+        var box=document.getElementById('box');
+        var small=box.children[0];
+        var big=box.children[1];
+        var mask=small.children[1];
+        var si=small.children[0];
+        var bi=big.children[0];
+        var imgs=document.getElementById('list').children;
+
+        //监听鼠标进入小盒子
+        small.onmouseover=function () {
+            mask.style.display = 'block';
+            big.style.display = 'block';
+
+            //监听鼠标的移动
+            small.onmousemove = function () {
+                var e = event || window.event;
+
+                //求出鼠标的坐标
+                var pointX = e.clientX - box.offsetLeft - mask.offsetWidth * 0.5;
+                var pointY = e.clientY - box.offsetTop - mask.offsetHeight * 0.5;
+
+                //边界检测
+                if (pointX < 0) {
+                    pointX = 0;
+                } else if (pointX >= small.offsetWidth - mask.offsetWidth) {
+                    pointX = small.offsetWidth - mask.offsetWidth;
+                }
+                if (pointY < 0) {
+                    pointY = 0
+                } else if (pointY >= small.offsetHeight - mask.offsetHeight) {
+                    pointY = small.offsetHeight - mask.offsetHeight
+                }
+
+                //让放大镜移动起来
+                mask.style.left = pointX + 'px';
+                mask.style.top = pointY + 'px';
+
+
+                 //让大图移动起来
+                /*
+                pointX/biX=small.width/big.width
+                biX=pointX/((si.offsetWidth-mask.offsetWIDth)/big.width)
+                */
+                bi.style.left= -pointX/((si.offsetWidth - mask.offsetWidth)/(bi.offsetWidth-big.offsetWidth)) + 'px';
+                bi.style.top= - pointY/((si.offsetHeight - mask.offsetHeight)/(bi.offsetHeight-big.offsetHeight))+'px';
+            }
+        };
+
+        //监听鼠标离开小盒子
+        small.onmouseout=function () {
+            mask.style.display='none';
+            big.style.display='none';
+        };
+
+        //鼠标悬停切换图片，this
+        /*for(var i=0;i<imgs.length;i++) {
+            var img = imgs[i];
+            img.index = i + 1;
+            img.onmouseover = function () {
+                for(var j=0;j<imgs.length;j++){
+                    var oimg=imgs[j];
+                    oimg.className='';
+                }
+                si.src = 'img' + this.index + '.jpg';
+                bi.src = 'img' + this.index + '.jpg';
+                this.className='selected';
+            }
+        }*/
+        //鼠标悬停切换图片，闭包
+        for(var i=0;i<imgs.length;i++){
+            (function (i) {
+                var img=imgs[i];
+                img.onmouseover=function () {
+                    for(var j=0;j<imgs.length;j++){
+                        var oimg=imgs[j];
+                        oimg.className='';
+                    }
+                    si.src = 'img' + (i+1) + '.jpg';
+                    bi.src = 'img' + (i+1) + '.jpg';
+                    imgs[i].className='selected'
+                }
+            })(i)
+        }
+    }
+</script>
+</body>
+</html>
